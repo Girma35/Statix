@@ -1,69 +1,78 @@
-import { useEffect, useMemo } from 'react';
-import { StyleSheet, ScrollView, Pressable, View } from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import {
+  StyleSheet, ScrollView, Pressable, View, Text,
+} from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useHeadlistStore } from '@/stores/useHeadlistStore';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import type { Headlist } from '@/types';
 
-function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
-  return (
-    <ThemedView type="backgroundElement" style={[styles.statCard, { borderTopColor: color, borderTopWidth: 3 }]}>
-      <ThemedText type="title" style={[styles.statValue, { color }]}>{value}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">{label}</ThemedText>
-    </ThemedView>
-  );
+const BLUE = '#0C5AC3';
+const LIGHT_BG = '#F4F7FD';
+
+// Calculates a color for a given headlist progress
+function progressColor(pct: number) {
+  if (pct < 30) return '#EF4444';
+  if (pct < 70) return '#0C5AC3';
+  return '#22C55E';
 }
 
-function HeadlistCard({ headlist, onPress }: { headlist: Headlist; onPress: () => void }) {
-  const unreviewedCount = headlist.words.filter((w) => !w.remembered).length;
-  const daysLeft = Math.ceil((headlist.distillationDate - Date.now()) / (1000 * 60 * 60 * 24));
-  const dueNow = daysLeft <= 0 && unreviewedCount > 0;
+function HeadlistRow({ headlist, onPress }: { headlist: Headlist; onPress: () => void }) {
+  const learned = headlist.words.filter((w) => w.remembered).length;
+  const pct = headlist.words.length > 0 ? Math.round((learned / headlist.words.length) * 100) : 0;
+  const color = progressColor(pct);
 
   return (
     <Pressable onPress={onPress}>
-      <ThemedView type="backgroundElement" style={styles.headlistCard}>
-        <View style={styles.headlistHeader}>
-          <ThemedText style={styles.headlistName}>{headlist.name}</ThemedText>
-          {dueNow ? (
-            <ThemedView style={[styles.badge, { backgroundColor: '#FEE2E2' }]}>
-              <ThemedText type="small" style={{ color: '#DC2626' }}>Due!</ThemedText>
-            </ThemedView>
-          ) : (
-            <ThemedView style={[styles.badge, { backgroundColor: '#D1FAE5' }]}>
-              <ThemedText type="small" style={{ color: '#059669' }}>{Math.max(0, daysLeft)}d</ThemedText>
-            </ThemedView>
-          )}
+      <View style={row.card}>
+        <View style={[row.iconBox, { backgroundColor: '#EEF4FF' }]}>
+          <Text style={row.iconText}>📖</Text>
         </View>
-        <ThemedText type="small" themeColor="textSecondary">
-          {headlist.words.length}/25 words · {headlist.words.filter((w) => w.remembered).length} learned
-        </ThemedText>
-        {unreviewedCount > 0 && (
-          <ThemedText type="small" themeColor="textSecondary">
-            {unreviewedCount} words to review
-          </ThemedText>
-        )}
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${headlist.words.length > 0 ? (headlist.words.filter((w) => w.remembered).length / headlist.words.length) * 100 : 0}%` },
-            ]}
-          />
+        <View style={row.info}>
+          <Text style={row.title}>{headlist.name}</Text>
+          <View style={row.barTrack}>
+            <View style={[row.barFill, { width: `${pct}%`, backgroundColor: color }]} />
+          </View>
         </View>
-      </ThemedView>
+        <Text style={[row.pct, { color }]}>{pct}%</Text>
+        <Text style={row.chevron}>›</Text>
+      </View>
     </Pressable>
   );
 }
 
+const row = StyleSheet.create({
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E8EEF9',
+  },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  iconText: { fontSize: 22 },
+  info: { flex: 1 },
+  title: { fontSize: 15, fontWeight: '600', color: '#0F172A', marginBottom: 6 },
+  barTrack: { height: 5, backgroundColor: '#E5E7EB', borderRadius: 3, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 3 },
+  pct: { fontSize: 13, fontWeight: '700', marginLeft: 10 },
+  chevron: { fontSize: 20, color: '#CBD5E1', marginLeft: 6 },
+});
+
 export default function DashboardScreen() {
   const { user, profile, refreshProfile, updateStreak } = useAuthStore();
   const { headlists, fetchHeadlists } = useHeadlistStore();
-  const theme = useTheme();
 
   useEffect(() => {
     if (user) {
@@ -73,165 +82,206 @@ export default function DashboardScreen() {
     }
   }, [user]);
 
-  const totalWords = headlists.reduce((sum, h) => sum + h.words.length, 0);
-  const wordsLearned = profile?.totalWordsLearned ?? 0;
   const streak = profile?.streak ?? 0;
-  const dueHeadlists = headlists.filter((h) => {
-    const hasUnreviewed = h.words.some((w) => !w.remembered);
-    return h.distillationDate <= Date.now() && hasUnreviewed;
-  });
+  const wordsLearned = profile?.totalWordsLearned ?? 0;
+  const totalWords = headlists.reduce((s, h) => s + h.words.length, 0);
+  const retentionRate = totalWords > 0
+    ? Math.round((wordsLearned / totalWords) * 100)
+    : 0;
 
-  // Words per cycle breakdown
-  const cycleBreakdown = useMemo(() => {
-    const cycles: Record<number, number> = {};
-    for (const h of headlists) {
-      for (const w of h.words) {
-        if (w.cycle > 0) {
-          cycles[w.cycle] = (cycles[w.cycle] || 0) + 1;
-        }
-      }
-    }
-    return Object.entries(cycles).sort(([a], [b]) => Number(a) - Number(b));
-  }, [headlists]);
+  const activeHeadlists = headlists.slice(0, 3);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="title">Hello, {profile?.displayName || 'Learner'}</ThemedText>
-          <ThemedText themeColor="textSecondary">Keep up the momentum!</ThemedText>
-        </ThemedView>
+    <SafeAreaView style={s.container}>
+      {/* Header */}
+      <View style={s.header}>
+        <Pressable><Text style={s.menuIcon}>☰</Text></Pressable>
+        <Text style={s.headerTitle}>Gold List</Text>
+        <View style={s.headerRight}>
+          <Pressable><Text style={s.headerIcon}>🔍</Text></Pressable>
+          <Pressable><Text style={s.headerIcon}>👤</Text></Pressable>
+        </View>
+      </View>
 
-        <ThemedView style={styles.statsRow}>
-          <StatCard label="Words Learned" value={wordsLearned} color="#208AEF" />
-          <StatCard label="Active Lists" value={headlists.length} color="#8B5CF6" />
-          <StatCard label="Day Streak" value={`🔥 ${streak}`} color="#F59E0B" />
-        </ThemedView>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        {/* Hero Banner */}
+        <View style={s.heroBanner}>
+          <View style={s.heroText}>
+            <Text style={s.helloText}>Hello, {profile?.displayName || 'Scholar'}!</Text>
+            <Text style={s.heroSub}>Ready for your daily{'\n'}distillation?</Text>
+          </View>
+          <View style={s.streakBadge}>
+            <Text style={s.streakIcon}>🏆</Text>
+            <Text style={s.streakNum}>{streak} Day</Text>
+            <Text style={s.streakLabel}>Streak</Text>
+          </View>
+        </View>
 
-        {/* Words per cycle breakdown */}
-        {cycleBreakdown.length > 0 && (
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle">Cycle Breakdown</ThemedText>
-            <ThemedView type="backgroundElement" style={styles.cycleContainer}>
-              {cycleBreakdown.map(([cycle, count]) => (
-                <View key={cycle} style={styles.cycleItem}>
-                  <ThemedText style={styles.cycleLabel}>D{cycle}</ThemedText>
-                  <ThemedView style={styles.cycleBar}>
-                    <View
-                      style={[
-                        styles.cycleFill,
-                        {
-                          width: `${Math.min(100, (count / Math.max(totalWords, 1)) * 200)}%`,
-                          backgroundColor: cycle === '1' ? '#208AEF' : cycle === '2' ? '#8B5CF6' : '#F59E0B',
-                        },
-                      ]}
-                    />
-                  </ThemedView>
-                  <ThemedText type="small" style={{ width: 32, textAlign: 'right', color: theme.textSecondary }}>
-                    {count}
-                  </ThemedText>
-                </View>
-              ))}
-            </ThemedView>
-          </ThemedView>
-        )}
+        {/* Stat Cards */}
+        <View style={s.statsRow}>
+          <View style={s.statCard}>
+            <Text style={s.statIcon}>📚</Text>
+            <Text style={s.statValue}>{wordsLearned.toLocaleString()}</Text>
+            <Text style={s.statLabel}>Words Mastered</Text>
+          </View>
+          <View style={s.statCard}>
+            <Text style={s.statIcon}>📊</Text>
+            <Text style={s.statValue}>{retentionRate}%</Text>
+            <Text style={s.statLabel}>Retention Rate</Text>
+          </View>
+        </View>
 
-        {dueHeadlists.length > 0 && (
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle">Due for Review</ThemedText>
-            {dueHeadlists.map((h) => (
-              <HeadlistCard
-                key={h.id}
-                headlist={h}
-                onPress={() => router.push(`/(tabs)/review/${h.id}`)}
-              />
-            ))}
-          </ThemedView>
-        )}
+        {/* Active Headlists */}
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionTitle}>Active Headlists</Text>
+            <Pressable onPress={() => router.push('/(tabs)/headlists')}>
+              <Text style={s.viewAll}>View All</Text>
+            </Pressable>
+          </View>
 
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Your Headlists</ThemedText>
           {headlists.length === 0 ? (
-            <ThemedView type="backgroundElement" style={styles.emptyState}>
-              <ThemedText themeColor="textSecondary">No headlists yet. Create one to start learning!</ThemedText>
-              <Pressable
-                style={styles.createButton}
-                onPress={() => router.push('/(tabs)/headlists')}
-              >
-                <ThemedText style={{ color: '#FFFFFF' }}>Create Headlist</ThemedText>
+            <View style={s.emptyState}>
+              <Text style={s.emptyText}>No headlists yet.</Text>
+              <Pressable style={s.emptyBtn} onPress={() => router.push('/(tabs)/create')}>
+                <Text style={s.emptyBtnText}>Create your first list</Text>
               </Pressable>
-            </ThemedView>
+            </View>
           ) : (
-            headlists.map((h) => (
-              <HeadlistCard
+            activeHeadlists.map((h) => (
+              <HeadlistRow
                 key={h.id}
                 headlist={h}
                 onPress={() => router.push(`/(tabs)/headlist/${h.id}`)}
               />
             ))
           )}
-        </ThemedView>
+        </View>
+
+        {/* Tips Card */}
+        <View style={s.tipsCard}>
+          <View style={s.tipsImage}>
+            <Text style={{ fontSize: 40 }}>👨‍💻</Text>
+          </View>
+          <View style={s.tipsText}>
+            <Text style={s.tipsTitle}>Distillation Method Pro Tips</Text>
+            <Text style={s.tipsSub}>Learn how to maximize your memory retention today.</Text>
+            <Text style={s.tipsLink}>Read More</Text>
+          </View>
+        </View>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Floating Action Button */}
+      <Pressable style={s.fab} onPress={() => router.push('/(tabs)/create')}>
+        <Text style={s.fabIcon}>⊕</Text>
+        <Text style={s.fabText}>Create New List</Text>
+      </Pressable>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { padding: Spacing.four, gap: Spacing.four, paddingBottom: 100 },
-  header: { gap: Spacing.one, marginBottom: Spacing.two },
-  statsRow: { flexDirection: 'row', gap: Spacing.two },
-  statCard: {
-    flex: 1,
-    padding: Spacing.three,
-    borderRadius: Spacing.two,
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: LIGHT_BG },
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.half,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
-  statValue: { fontSize: 24, fontWeight: '700' },
-  section: { gap: Spacing.three },
-  cycleContainer: { padding: Spacing.three, borderRadius: Spacing.two, gap: Spacing.two },
-  cycleItem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
-  cycleLabel: { width: 24, fontWeight: '600' },
-  cycleBar: { flex: 1, height: 8, backgroundColor: '#E5E7EB', borderRadius: 4, overflow: 'hidden' },
-  cycleFill: { height: '100%', borderRadius: 4 },
-  headlistCard: {
-    padding: Spacing.three,
-    borderRadius: Spacing.two,
-    gap: Spacing.two,
-  },
-  headlistHeader: {
+  menuIcon: { fontSize: 22, color: BLUE },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: BLUE },
+  headerRight: { flexDirection: 'row', gap: 12 },
+  headerIcon: { fontSize: 22 },
+  scroll: { paddingHorizontal: 20, paddingTop: 20 },
+  heroBanner: {
+    backgroundColor: BLUE,
+    borderRadius: 18,
+    padding: 24,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 20,
   },
-  headlistName: { fontSize: 16, fontWeight: '600', flex: 1 },
-  badge: {
-    paddingHorizontal: Spacing.two,
-    paddingVertical: Spacing.half,
-    borderRadius: Spacing.five,
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: '#E5E7EB',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#208AEF',
-    borderRadius: 2,
-  },
-  emptyState: {
-    padding: Spacing.four,
-    borderRadius: Spacing.two,
+  heroText: { flex: 1 },
+  helloText: { fontSize: 22, fontWeight: '800', color: '#FFFFFF', marginBottom: 6 },
+  heroSub: { fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 20 },
+  streakBadge: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 14,
+    width: 90,
+    paddingVertical: 12,
     alignItems: 'center',
-    gap: Spacing.three,
   },
-  createButton: {
-    backgroundColor: '#208AEF',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.two,
+  streakIcon: { fontSize: 28 },
+  streakNum: { fontSize: 18, fontWeight: '800', color: '#FFFFFF', marginTop: 4 },
+  streakLabel: { fontSize: 12, color: 'rgba(255,255,255,0.8)' },
+  statsRow: { flexDirection: 'row', gap: 14, marginBottom: 24 },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E8EEF9',
+    alignItems: 'flex-start',
   },
+  statIcon: { fontSize: 26, marginBottom: 12 },
+  statValue: { fontSize: 28, fontWeight: '800', color: '#0F172A' },
+  statLabel: { fontSize: 13, color: '#64748B', marginTop: 2 },
+  section: { marginBottom: 24 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+  viewAll: { fontSize: 14, fontWeight: '600', color: BLUE },
+  emptyState: { backgroundColor: '#FFFFFF', borderRadius: 14, padding: 24, alignItems: 'center', gap: 12 },
+  emptyText: { color: '#64748B', fontSize: 15 },
+  emptyBtn: { backgroundColor: BLUE, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 },
+  emptyBtnText: { color: '#FFFFFF', fontWeight: '600' },
+  tipsCard: {
+    backgroundColor: '#EEF4FF',
+    borderRadius: 14,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    marginBottom: 20,
+  },
+  tipsImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 10,
+    backgroundColor: '#BFDBFE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  tipsText: { flex: 1 },
+  tipsTitle: { fontSize: 14, fontWeight: '700', color: '#0F172A', marginBottom: 4 },
+  tipsSub: { fontSize: 12, color: '#475569', lineHeight: 18, marginBottom: 6 },
+  tipsLink: { fontSize: 13, fontWeight: '700', color: BLUE },
+  fab: {
+    position: 'absolute',
+    bottom: 82,
+    right: 20,
+    backgroundColor: BLUE,
+    borderRadius: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 22,
+    gap: 8,
+    elevation: 6,
+    shadowColor: BLUE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+  },
+  fabIcon: { fontSize: 22, color: '#FFFFFF' },
+  fabText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
 });

@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Pressable, ScrollView, Platform } from 'react-native';
+import {
+  StyleSheet, View, Text, TextInput, Pressable,
+  ScrollView, KeyboardAvoidingView, Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useHeadlistStore } from '@/stores/useHeadlistStore';
+
+const BLUE = '#0C5AC3';
 
 export default function CreateListScreen() {
   const [listName, setListName] = useState('');
@@ -15,7 +20,6 @@ export default function CreateListScreen() {
     try {
       const id = await createHeadlist(user.uid, listName.trim());
       setListName('');
-      // Navigate to the newly created headlist
       router.push(`/(tabs)/headlist/${id}`);
     } catch (error) {
       console.error('Failed to create list', error);
@@ -23,239 +27,184 @@ export default function CreateListScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={s.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.push('/(tabs)/')} style={styles.headerIcon}>
-          <Text style={styles.closeIcon}>✕</Text>
+      <View style={s.header}>
+        <Pressable onPress={() => router.push('/(tabs)/')} style={s.headerBtn}>
+          <Text style={s.closeBtn}>✕</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>Gold List</Text>
-        <Pressable style={styles.headerIcon}>
-          <Text style={styles.profileIcon}>👤</Text>
-        </Pressable>
+        <Text style={s.headerTitle}>Gold List</Text>
+        <View style={s.headerBtn}>
+          <Text style={s.profileIcon}>👤</Text>
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Hero Card */}
-        <View style={styles.heroCard}>
-          <View style={styles.heroPattern} />
-          <Text style={styles.heroTitle}>Start a New Journey</Text>
-          <Text style={styles.heroSubtitle}>
-            The Gold List method uses a systematic 14-day distillation process to move vocabulary from short-term to long-term memory effortlessly.
-          </Text>
-          <Text style={styles.watermarkIcon}>📖</Text>
-        </View>
-
-        {/* Input Form */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>LIST NAME</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g., German Adjectives, SQL Basics..."
-            placeholderTextColor="#9CA3AF"
-            value={listName}
-            onChangeText={setListName}
-          />
-        </View>
-
-        {/* Feature Cards */}
-        <View style={styles.featureCard}>
-          <View style={[styles.featureIconContainer, { backgroundColor: '#208AEF' }]}>
-            <Text style={styles.featureIcon}>⚗️</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+          {/* Hero Card */}
+          <View style={s.heroCard}>
+            <View style={s.heroContent}>
+              <Text style={s.heroTitle}>Start a New Journey</Text>
+              <Text style={s.heroSub}>
+                The Gold List method uses a systematic 14-day distillation
+                process to move vocabulary from short-term to long-term memory
+                effortlessly.
+              </Text>
+            </View>
+            <Text style={s.heroWatermark}>📖</Text>
           </View>
-          <View style={styles.featureTextContainer}>
-            <Text style={styles.featureTitle}>Distill Every 2 Weeks</Text>
-            <Text style={styles.featureDesc}>
-              Review your list and remove 30% of what you've naturally memorized.
-            </Text>
-          </View>
-        </View>
 
-        <View style={styles.featureCard}>
-          <View style={[styles.featureIconContainer, { backgroundColor: '#4ADE80' }]}>
-            <Text style={styles.featureIcon}>🧠</Text>
+          {/* Input */}
+          <View style={s.formGroup}>
+            <Text style={s.label}>LIST NAME</Text>
+            <TextInput
+              style={s.input}
+              placeholder="e.g., German Adjectives, SQL Basics..."
+              placeholderTextColor="#9CA3AF"
+              value={listName}
+              onChangeText={setListName}
+            />
           </View>
-          <View style={styles.featureTextContainer}>
-            <Text style={styles.featureTitle}>Long-term Retention</Text>
-            <Text style={styles.featureDesc}>
-              No rote memorization required. Your brain filters the essential data.
-            </Text>
+
+          {/* Feature Cards */}
+          <View style={s.featureCard}>
+            <View style={[s.featureIcon, { backgroundColor: BLUE }]}>
+              <Text style={s.featureEmoji}>⚗️</Text>
+            </View>
+            <View style={s.featureText}>
+              <Text style={s.featureTitle}>Distill Every 2 Weeks</Text>
+              <Text style={s.featureSub}>
+                Review your list and remove 30% of what you've naturally memorized.
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* Create Button */}
-        <Pressable
-          style={[styles.createButton, !listName.trim() && styles.createButtonDisabled]}
-          onPress={handleCreate}
-          disabled={!listName.trim()}
-        >
-          <Text style={styles.createButtonText}>Create List ➔</Text>
-        </Pressable>
+          <View style={s.featureCard}>
+            <View style={[s.featureIcon, { backgroundColor: '#22C55E' }]}>
+              <Text style={s.featureEmoji}>🧠</Text>
+            </View>
+            <View style={s.featureText}>
+              <Text style={s.featureTitle}>Long-term Retention</Text>
+              <Text style={s.featureSub}>
+                No rote memorization required. Your brain filters the essential data.
+              </Text>
+            </View>
+          </View>
 
-        {/* Footer */}
-        <Text style={styles.footerText}>
-          By creating a list, you're starting your first Headlist.
-        </Text>
-      </ScrollView>
+          {/* Button */}
+          <Pressable
+            style={[s.btn, !listName.trim() && s.btnDisabled]}
+            onPress={handleCreate}
+            disabled={!listName.trim()}
+          >
+            <Text style={s.btnText}>Create List  ➔</Text>
+          </Pressable>
+
+          <Text style={s.footer}>By creating a list, you're starting your first Headlist.</Text>
+          <View style={{ height: 30 }} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 14,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
   },
-  headerIcon: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeIcon: {
-    fontSize: 20,
-    color: '#0C5AC3',
-    fontWeight: '600',
-  },
+  headerBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  closeBtn: { fontSize: 18, color: BLUE, fontWeight: '700' },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0C5AC3',
+    fontSize: 20, fontWeight: '800', color: BLUE,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
-  profileIcon: {
-    fontSize: 24,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
+  profileIcon: { fontSize: 24 },
+  scroll: { padding: 20 },
   heroCard: {
-    backgroundColor: '#F0F4FA',
-    borderRadius: 16,
+    backgroundColor: '#EEF4FF',
+    borderRadius: 18,
     padding: 24,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 24,
-    position: 'relative',
+    borderColor: '#DBEAFE',
+    marginBottom: 28,
+    flexDirection: 'row',
     overflow: 'hidden',
   },
-  heroPattern: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.1,
-    // A simple dots trick could be applied here with a tiled image if available, but omitting for now.
-  },
-  watermarkIcon: {
-    position: 'absolute',
-    right: -20,
-    bottom: -20,
-    fontSize: 120,
-    opacity: 0.05,
-  },
+  heroContent: { flex: 1, paddingRight: 10 },
   heroTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#0C5AC3',
-    marginBottom: 12,
+    fontSize: 20, fontWeight: '800', color: BLUE, marginBottom: 10,
     fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
-  heroSubtitle: {
-    fontSize: 15,
-    color: '#475569',
-    lineHeight: 24,
-    paddingRight: 40,
+  heroSub: { fontSize: 14, color: '#475569', lineHeight: 22 },
+  heroWatermark: {
+    fontSize: 80,
+    opacity: 0.12,
+    position: 'absolute',
+    right: -10,
+    bottom: -10,
   },
-  formGroup: {
-    marginBottom: 24,
-  },
+  formGroup: { marginBottom: 24 },
   label: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748B',
-    letterSpacing: 1,
-    marginBottom: 8,
-    textTransform: 'uppercase',
+    fontSize: 11, fontWeight: '700', color: '#64748B',
+    letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8,
   },
   input: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#CBD5E1',
     borderRadius: 12,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
     color: '#0F172A',
   },
   featureCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E8EEF9',
+    marginBottom: 14,
   },
-  featureIconContainer: {
+  featureIcon: {
     width: 48,
     height: 48,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 14,
   },
-  featureIcon: {
-    fontSize: 24,
-    color: '#FFFFFF',
-  },
-  featureTextContainer: {
-    flex: 1,
-  },
-  featureTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0F172A',
-    marginBottom: 4,
-  },
-  featureDesc: {
-    fontSize: 13,
-    color: '#475569',
-    lineHeight: 20,
-  },
-  createButton: {
-    backgroundColor: '#0C5AC3',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
+  featureEmoji: { fontSize: 24 },
+  featureText: { flex: 1 },
+  featureTitle: { fontSize: 15, fontWeight: '700', color: '#0F172A', marginBottom: 4 },
+  featureSub: { fontSize: 13, color: '#64748B', lineHeight: 19 },
+  btn: {
+    backgroundColor: BLUE,
+    borderRadius: 14,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 10,
     marginBottom: 16,
+    elevation: 4,
+    shadowColor: BLUE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
-  createButtonDisabled: {
-    opacity: 0.5,
-  },
-  createButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  footerText: {
-    textAlign: 'center',
-    fontSize: 13,
-    color: '#64748B',
-  },
+  btnDisabled: { opacity: 0.45 },
+  btnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  footer: { textAlign: 'center', fontSize: 13, color: '#94A3B8' },
 });
