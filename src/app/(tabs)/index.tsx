@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, ScrollView, Pressable, View, Text, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, ScrollView, Pressable, View, Text, Platform, Modal, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -62,8 +62,9 @@ const r = StyleSheet.create({
 });
 
 export default function DashboardScreen() {
-  const { user, profile, refreshProfile, updateStreak } = useAuthStore();
+  const { user, profile, refreshProfile, updateStreak, logOut } = useAuthStore();
   const { headlists, fetchHeadlists } = useHeadlistStore();
+  const [menuVisible, setMenuVisible] = useState(false);
 
   useEffect(() => {
     if (user) { fetchHeadlists(user.uid); refreshProfile(); updateStreak(); }
@@ -74,14 +75,62 @@ export default function DashboardScreen() {
   const totalWords = headlists.reduce((s, h) => s + h.words.length, 0);
   const retentionRate = totalWords > 0 ? Math.round((wordsLearned / totalWords) * 100) : 0;
 
+  const handleLogout = () => {
+    setMenuVisible(false);
+    Alert.alert('Log Out', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Log Out', style: 'destructive', onPress: logOut },
+    ]);
+  };
+
   return (
     <SafeAreaView style={s.container}>
+      {/* Side Menu Modal */}
+      <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+        <Pressable style={m.overlay} onPress={() => setMenuVisible(false)}>
+          <View style={m.drawer}>
+            <Text style={m.drawerTitle}>Gold List</Text>
+            <Text style={m.drawerEmail}>{profile?.email}</Text>
+            <View style={m.drawerDivider} />
+            <Pressable style={m.drawerItem} onPress={() => { setMenuVisible(false); router.push('/(tabs)/'); }}>
+              <Icon name="house.fill" size={20} color={BLUE} />
+              <Text style={m.drawerItemTxt}>Home</Text>
+            </Pressable>
+            <Pressable style={m.drawerItem} onPress={() => { setMenuVisible(false); router.push('/(tabs)/create'); }}>
+              <Icon name="plus.circle.fill" size={20} color={BLUE} />
+              <Text style={m.drawerItemTxt}>Create List</Text>
+            </Pressable>
+            <Pressable style={m.drawerItem} onPress={() => { setMenuVisible(false); router.push('/(tabs)/headlists'); }}>
+              <Icon name="chart.bar.fill" size={20} color={BLUE} />
+              <Text style={m.drawerItemTxt}>Progress</Text>
+            </Pressable>
+            <Pressable style={m.drawerItem} onPress={() => { setMenuVisible(false); router.push('/(tabs)/settings'); }}>
+              <Icon name="gearshape.fill" size={20} color={BLUE} />
+              <Text style={m.drawerItemTxt}>Settings</Text>
+            </Pressable>
+            <View style={m.drawerDivider} />
+            <Pressable style={m.drawerItem} onPress={handleLogout}>
+              <Icon name="arrow.right.square.fill" size={20} color="#EF4444" />
+              <Text style={[m.drawerItemTxt, { color: '#EF4444' }]}>Log Out</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
       {/* Header */}
       <View style={s.header}>
-        <Pressable><Icon name="house.fill" size={22} color={BLUE} /></Pressable>
+        <Pressable onPress={() => setMenuVisible(true)} style={s.headerBtn}>
+          <View style={s.hamburger}>
+            <View style={s.hamburgerLine} />
+            <View style={s.hamburgerLine} />
+            <View style={[s.hamburgerLine, { width: 14 }]} />
+          </View>
+        </Pressable>
         <Text style={s.headerTitle}>Gold List</Text>
         <View style={s.headerRight}>
-          <Pressable style={s.headerBtn}><Icon name="person.circle.fill" size={26} color={BLUE} /></Pressable>
+          <Pressable style={s.headerBtn} onPress={() => router.push('/(tabs)/settings')}>
+            <Icon name="person.circle.fill" size={26} color={BLUE} />
+          </Pressable>
         </View>
       </View>
 
@@ -226,4 +275,21 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 10,
   },
   fabTxt: { color: '#FFF', fontWeight: '700', fontSize: 15 },
+  hamburger: { gap: 5, padding: 4 },
+  hamburgerLine: { width: 20, height: 2.5, backgroundColor: BLUE, borderRadius: 2 },
+});
+
+const m = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', flexDirection: 'row' },
+  drawer: {
+    width: '72%', backgroundColor: '#FFFFFF', padding: 24, paddingTop: 48,
+    shadowColor: '#000', shadowOffset: { width: 4, height: 0 },
+    shadowOpacity: 0.15, shadowRadius: 16, elevation: 12,
+  },
+  drawerTitle: { fontSize: 22, fontWeight: '800', color: BLUE, marginBottom: 4,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  drawerEmail: { fontSize: 13, color: '#94A3B8', marginBottom: 20 },
+  drawerDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 12 },
+  drawerItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 13 },
+  drawerItemTxt: { fontSize: 16, fontWeight: '600', color: '#0F172A' },
 });

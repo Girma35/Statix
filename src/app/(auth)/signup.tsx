@@ -95,7 +95,7 @@ export default function SignUpScreen() {
             </ThemedText>
           </Pressable>
 
-          <Link href="/(auth)" asChild>
+          <Link href="/(auth)/login" asChild>
             <Pressable style={styles.linkButton}>
               <ThemedText type="link">Already have an account? Log In</ThemedText>
             </Pressable>

@@ -1,17 +1,51 @@
-import { useState } from 'react';
-import { StyleSheet, ScrollView, Pressable, TextInput, Alert, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, ScrollView, View, Text, Pressable, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { Icon } from '@/components/icon';
+
+const BLUE = '#0C5AC3';
+const BG = '#F4F7FD';
+
+interface SettingRowProps {
+  iconName: string;
+  label: string;
+  value?: string;
+  onPress?: () => void;
+  external?: boolean;
+  danger?: boolean;
+}
+
+function SettingRow({ iconName, label, value, onPress, external, danger }: SettingRowProps) {
+  return (
+    <Pressable onPress={onPress} style={r.row}>
+      <View style={r.rowLeft}>
+        <Icon name={iconName as any} size={22} color={danger ? '#EF4444' : '#475569'} />
+        <Text style={[r.rowLabel, danger && { color: '#EF4444' }]}>{label}</Text>
+      </View>
+      <View style={r.rowRight}>
+        {value && <Text style={r.rowValue}>{value}</Text>}
+        <Icon name={external ? 'arrow.up.right.square' : 'chevron.right'} size={16} color="#CBD5E1" />
+      </View>
+    </Pressable>
+  );
+}
+
+const r = StyleSheet.create({
+  row: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', paddingVertical: 15, paddingHorizontal: 18,
+  },
+  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  rowLabel: { fontSize: 15, fontWeight: '500', color: '#0F172A' },
+  rowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rowValue: { fontSize: 13, color: BLUE, fontWeight: '600' },
+});
 
 export default function SettingsScreen() {
   const { user, profile, logOut, loading } = useAuthStore();
-  const theme = useTheme();
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [displayName, setDisplayName] = useState(profile?.displayName || '');
+  const streak = profile?.streak ?? 0;
+  const level = streak >= 30 ? 'PLATINUM LEVEL' : streak >= 14 ? 'GOLD LEVEL' : 'SILVER LEVEL';
 
   const handleLogout = () => {
     Alert.alert('Log Out', 'Are you sure you want to log out?', [
@@ -20,147 +54,92 @@ export default function SettingsScreen() {
     ]);
   };
 
-  const handleSaveProfile = async () => {
-    if (!displayName.trim()) return;
-    const { updateProfile } = useAuthStore.getState();
-    await updateProfile({ displayName: displayName.trim() });
-    setEditingProfile(false);
-  };
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="title">Settings</ThemedText>
-        </ThemedView>
+    <SafeAreaView style={s.container}>
+      {/* Header */}
+      <View style={s.header}>
+        <Pressable><Icon name="house.fill" size={22} color={BLUE} /></Pressable>
+        <Text style={s.headerTitle}>Gold List</Text>
+        <Pressable><Icon name="person.circle.fill" size={26} color={BLUE} /></Pressable>
+      </View>
 
-        {/* Profile Section */}
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Profile</ThemedText>
-          <ThemedView type="backgroundElement" style={styles.card}>
-            {editingProfile ? (
-              <View style={styles.editRow}>
-                <TextInput
-                  style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.backgroundSelected }]}
-                  value={displayName}
-                  onChangeText={setDisplayName}
-                  placeholder="Display Name"
-                  placeholderTextColor={theme.textSecondary}
-                  autoFocus
-                />
-                <View style={styles.editActions}>
-                  <Pressable style={styles.cancelBtn} onPress={() => setEditingProfile(false)}>
-                    <ThemedText>Cancel</ThemedText>
-                  </Pressable>
-                  <Pressable style={styles.saveBtn} onPress={handleSaveProfile}>
-                    <ThemedText style={{ color: '#FFFFFF' }}>Save</ThemedText>
-                  </Pressable>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.profileRow}>
-                <View>
-                  <ThemedText style={styles.profileName}>{profile?.displayName || 'User'}</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">{profile?.email}</ThemedText>
-                </View>
-                <Pressable
-                  style={styles.editBtn}
-                  onPress={() => {
-                    setDisplayName(profile?.displayName || '');
-                    setEditingProfile(true);
-                  }}
-                >
-                  <ThemedText type="link">Edit</ThemedText>
-                </Pressable>
-              </View>
-            )}
-          </ThemedView>
-        </ThemedView>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+        <Text style={s.pageTitle}>Settings</Text>
+        <Text style={s.pageSub}>Customize your Gold List learning experience.</Text>
 
-        {/* Stats Section */}
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Stats</ThemedText>
-          <ThemedView type="backgroundElement" style={styles.card}>
-            <View style={styles.statRow}>
-              <ThemedText>Total Words Learned</ThemedText>
-              <ThemedText style={styles.statValue}>{profile?.totalWordsLearned ?? 0}</ThemedText>
-            </View>
-            <View style={styles.statRow}>
-              <ThemedText>Day Streak</ThemedText>
-              <ThemedText style={styles.statValue}>🔥 {profile?.streak ?? 0}</ThemedText>
-            </View>
-            <View style={styles.statRow}>
-              <ThemedText>Member Since</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'N/A'}
-              </ThemedText>
-            </View>
-          </ThemedView>
-        </ThemedView>
+        {/* Profile Card */}
+        <View style={s.profileCard}>
+          <View style={s.avatar}>
+            <Icon name="person.fill" size={38} color="#FFFFFF" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.profileName}>{profile?.displayName || 'Learner'}</Text>
+            <Text style={s.profileBadge}>{streak} DAY STREAK • {level}</Text>
+          </View>
+        </View>
 
-        {/* Account Section */}
-        <ThemedView style={styles.section}>
-          <ThemedText type="subtitle">Account</ThemedText>
-          <ThemedView type="backgroundElement" style={styles.card}>
-            <Pressable style={styles.logoutButton} onPress={handleLogout} disabled={loading}>
-              <ThemedText style={{ color: '#DC2626', fontSize: 16 }}>
-                {loading ? 'Logging out...' : 'Log Out'}
-              </ThemedText>
-            </Pressable>
-          </ThemedView>
-        </ThemedView>
+        {/* Settings Group 1 */}
+        <View style={s.group}>
+          <SettingRow iconName="person.fill" label="Account" onPress={() => {}} />
+          <View style={s.divider} />
+          <SettingRow iconName="bell.fill" label="Notifications" onPress={() => {}} />
+          <View style={s.divider} />
+          <SettingRow iconName="clock.fill" label="Study Reminders" value="Daily 9:00 AM" onPress={() => {}} />
+        </View>
+
+        {/* Settings Group 2 */}
+        <View style={s.group}>
+          <SettingRow iconName="info.circle.fill" label="About" onPress={() => {}} />
+          <View style={s.divider} />
+          <SettingRow iconName="questionmark.circle.fill" label="Help Center" external onPress={() => {}} />
+        </View>
+
+        {/* Logout Button */}
+        <Pressable style={s.logoutBtn} onPress={handleLogout} disabled={loading}>
+          <Icon name="arrow.right.square.fill" size={22} color="#0F172A" />
+          <Text style={s.logoutTxt}>{loading ? 'Logging out...' : 'Log Out'}</Text>
+        </Pressable>
+
+        <Text style={s.version}>Version 2.4.1 (Build 890)</Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scroll: { padding: Spacing.four, gap: Spacing.four, paddingBottom: 100 },
-  header: { marginBottom: Spacing.two },
-  section: { gap: Spacing.three },
-  card: {
-    padding: Spacing.three,
-    borderRadius: Spacing.two,
-    gap: Spacing.two,
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BG },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingVertical: 14,
+    backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#F1F5F9',
   },
-  profileRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  headerTitle: { fontSize: 20, fontWeight: '800', color: BLUE,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  scroll: { padding: 20, gap: 16 },
+  pageTitle: { fontSize: 28, fontWeight: '800', color: '#0F172A' },
+  pageSub: { fontSize: 14, color: '#64748B', lineHeight: 20 },
+  profileCard: {
+    backgroundColor: '#FFF', borderRadius: 16, padding: 18,
+    flexDirection: 'row', alignItems: 'center', gap: 16,
+    borderWidth: 1, borderColor: '#E8EEF9',
   },
-  profileName: { fontSize: 18, fontWeight: '600' },
-  editBtn: { padding: Spacing.one },
-  editRow: { gap: Spacing.two },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    padding: Spacing.two,
-    fontSize: 16,
+  avatar: {
+    width: 58, height: 58, borderRadius: 29,
+    backgroundColor: '#94A3B8',
+    justifyContent: 'center', alignItems: 'center',
   },
-  editActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: Spacing.two,
+  profileName: { fontSize: 18, fontWeight: '700', color: '#0F172A', marginBottom: 4 },
+  profileBadge: { fontSize: 12, fontWeight: '700', color: '#22C55E', letterSpacing: 0.5 },
+  group: {
+    backgroundColor: '#FFF', borderRadius: 16,
+    borderWidth: 1, borderColor: '#E8EEF9', overflow: 'hidden',
   },
-  cancelBtn: { paddingVertical: Spacing.one, paddingHorizontal: Spacing.three },
-  saveBtn: {
-    backgroundColor: '#208AEF',
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.four,
-    borderRadius: Spacing.two,
+  divider: { height: 1, backgroundColor: '#F1F5F9', marginLeft: 54 },
+  logoutBtn: {
+    backgroundColor: '#FFF', borderRadius: 16, borderWidth: 1, borderColor: '#E8EEF9',
+    paddingVertical: 16, paddingHorizontal: 18,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
   },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: Spacing.two,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  statValue: { fontWeight: '600' },
-  logoutButton: {
-    alignItems: 'center',
-    padding: Spacing.two,
-  },
+  logoutTxt: { fontSize: 16, fontWeight: '600', color: '#0F172A' },
+  version: { textAlign: 'center', fontSize: 12, color: '#94A3B8' },
 });
