@@ -7,8 +7,10 @@ import {
   onAuthStateChanged,
   User,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
+import { useHeadlistStore } from '@/stores/useHeadlistStore';
+import { useDistillationStore } from '@/stores/useDistillationStore';
 import type { UserProfile } from '@/types';
 
 interface AuthState {
@@ -26,6 +28,7 @@ interface AuthState {
   clearError: () => void;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateStreak: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -81,6 +84,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logOut: async () => {
     set({ loading: true });
     await signOut(auth);
+    // Reset all stores on logout
+    useHeadlistStore.setState({ headlists: [], loading: false, error: null });
+    useDistillationStore.setState({ session: null, loading: false, error: null });
     set({ user: null, profile: null, loading: false });
   },
 
@@ -91,6 +97,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (err: any) {
       set({ error: err.message });
     }
+  },
+
+  updateStreak: async () => {
+    const { profile } = get();
+    if (!profile) return;
+    const today = new Date().toISOString().split('T')[0];
+    if (profile.lastActiveDate === today) return; // already updated today
+
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const newStreak = profile.lastActiveDate === yesterday ? profile.streak + 1 : 1;
+
+    const updated = { ...profile, streak: newStreak, lastActiveDate: today };
+    await updateDoc(doc(db, 'users', profile.uid), { streak: newStreak, lastActiveDate: today });
+    set({ profile: updated });
   },
 
   clearError: () => set({ error: null }),

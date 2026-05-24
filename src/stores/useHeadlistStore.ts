@@ -12,6 +12,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { scheduleDistillationReminder, cancelDistillationReminder } from '@/services/notifications';
 import type { Headlist, Word } from '@/types';
 
 interface HeadlistState {
@@ -70,6 +71,8 @@ export const useHeadlistStore = create<HeadlistState>((set, get) => ({
         completed: false,
       };
       set({ headlists: [...get().headlists, newHeadlist], loading: false });
+      // Schedule notification
+      scheduleDistillationReminder(ref.id, name, distillationDate);
       return ref.id;
     } catch (err: any) {
       set({ loading: false, error: err.message });
@@ -81,6 +84,7 @@ export const useHeadlistStore = create<HeadlistState>((set, get) => ({
     set({ error: null });
     try {
       await deleteDoc(doc(db, 'users', userId, 'headlists', headlistId));
+      await cancelDistillationReminder(headlistId);
       set({ headlists: get().headlists.filter((h) => h.id !== headlistId) });
     } catch (err: any) {
       set({ error: err.message });

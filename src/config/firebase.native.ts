@@ -1,7 +1,13 @@
 import { initializeApp } from 'firebase/app';
-import { initializeAuth, browserLocalPersistence } from 'firebase/auth';
+import { initializeAuth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Auth } from 'firebase/auth';
+
+// getReactNativePersistence is exported from @firebase/auth on React Native.
+// We import it via a require since the TypeScript typings don't expose it cleanly.
+// The `react-native` field in @firebase/auth package.json resolves this at bundle time.
+const { getReactNativePersistence } = require('@firebase/auth');
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -15,7 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const auth: Auth = initializeAuth(app, {
-  persistence: browserLocalPersistence,
+  persistence: getReactNativePersistence(AsyncStorage),
 });
 
 const db: Firestore = getFirestore(app);

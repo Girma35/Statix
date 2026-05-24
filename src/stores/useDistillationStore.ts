@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { doc, setDoc, getDoc, updateDoc, increment, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import type { Word, Headlist, DistillationSession } from '@/types';
 
