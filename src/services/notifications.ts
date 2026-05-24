@@ -1,18 +1,28 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-// Configure how notifications are displayed
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+let Notifications: any = null;
+try {
+  Notifications = require('expo-notifications');
+  
+  // Configure how notifications are displayed
+  if (Notifications && Notifications.setNotificationHandler) {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  }
+} catch (e) {
+  console.warn('expo-notifications not available in this environment (likely Expo Go on Android). Reminders will be disabled.');
+}
 
 export async function requestNotificationPermissions(): Promise<boolean> {
+  if (!Notifications) return false;
+
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
 
@@ -26,7 +36,7 @@ export async function requestNotificationPermissions(): Promise<boolean> {
     return false;
   }
 
-  if (Platform.OS === 'android') {
+  if (Platform.OS === 'android' && Notifications.AndroidImportance) {
     Notifications.setNotificationChannelAsync('distillation', {
       name: 'Distillation Reminders',
       importance: Notifications.AndroidImportance.HIGH,
@@ -43,6 +53,8 @@ export async function scheduleDistillationReminder(
   headlistName: string,
   distillationDate: number,
 ): Promise<string | null> {
+  if (!Notifications) return null;
+
   const permission = await requestNotificationPermissions();
   if (!permission) return null;
 
@@ -59,7 +71,7 @@ export async function scheduleDistillationReminder(
     },
     trigger: {
       date: new Date(distillationDate),
-      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      type: Notifications.SchedulableTriggerInputTypes?.DATE || 0,
     },
   });
 
@@ -67,6 +79,8 @@ export async function scheduleDistillationReminder(
 }
 
 export async function cancelDistillationReminder(headlistId: string): Promise<void> {
+  if (!Notifications) return;
+
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   for (const notification of scheduled) {
     if (notification.content.data?.headlistId === headlistId) {
@@ -76,11 +90,13 @@ export async function cancelDistillationReminder(headlistId: string): Promise<vo
 }
 
 export async function cancelAllReminders(): Promise<void> {
+  if (!Notifications) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
 export function addNotificationResponseListener(
-  handler: (response: Notifications.NotificationResponse) => void,
-): Notifications.EventSubscription {
+  handler: (response: any) => void,
+): any {
+  if (!Notifications) return { remove: () => {} };
   return Notifications.addNotificationResponseReceivedListener(handler);
 }
