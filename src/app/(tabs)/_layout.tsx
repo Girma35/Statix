@@ -1,56 +1,42 @@
+import React from 'react';
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '@/hooks/use-theme';
+import { View, StyleSheet } from 'react-native';
+import { Icon } from '@/components/icon';
 
-function HomeIcon({ color }: { color: string }) {
-  return <Text style={{ fontSize: 22 }}>🏠</Text>;
+const BLUE = '#0C5AC3';
+const GRAY = '#9CA3AF';
+
+function TabIcon({ name, focused }: { name: any; focused: boolean }) {
+  return <Icon name={name} size={24} color={focused ? BLUE : GRAY} />;
 }
-function ProgressIcon({ color }: { color: string }) {
-  return <Text style={{ fontSize: 22 }}>📊</Text>;
-}
-function SettingsIcon({ color }: { color: string }) {
-  return <Text style={{ fontSize: 22 }}>⚙️</Text>;
-}
-function CreateIcon({ focused }: { focused: boolean }) {
+
+function CreateTabIcon({ focused }: { focused: boolean }) {
   return (
-    <View style={[tabStyles.createIcon, focused && tabStyles.createIconFocused]}>
-      <Text style={[tabStyles.createPlus, focused && tabStyles.createPlusFocused]}>+</Text>
+    <View style={[ct.wrap, focused && ct.wrapActive]}>
+      <Icon name="plus.circle.fill" size={22} color={focused ? '#FFFFFF' : GRAY} />
     </View>
   );
 }
 
-const tabStyles = StyleSheet.create({
-  createIcon: {
-    width: 44,
-    height: 32,
+const ct = StyleSheet.create({
+  wrap: {
+    width: 48,
+    height: 34,
     borderRadius: 10,
     backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  createIconFocused: {
-    backgroundColor: '#0C5AC3',
-  },
-  createPlus: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#9CA3AF',
-    lineHeight: 26,
-  },
-  createPlusFocused: {
-    color: '#FFFFFF',
-  },
+  wrapActive: { backgroundColor: BLUE },
 });
 
 export default function TabLayout() {
-  const theme = useTheme();
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0C5AC3',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: BLUE,
+        tabBarInactiveTintColor: GRAY,
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopColor: '#F1F5F9',
@@ -58,44 +44,41 @@ export default function TabLayout() {
           height: 64,
           paddingBottom: 10,
           paddingTop: 8,
-          elevation: 8,
+          elevation: 10,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.07,
+          shadowRadius: 10,
         },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <HomeIcon color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="house.fill" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="create"
         options={{
           title: 'Create',
-          tabBarIcon: ({ focused }) => <CreateIcon focused={focused} />,
+          tabBarIcon: ({ focused }) => <CreateTabIcon focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="headlists"
         options={{
           title: 'Progress',
-          tabBarIcon: ({ color }) => <ProgressIcon color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="chart.bar.fill" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => <SettingsIcon color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="gearshape.fill" focused={focused} />,
         }}
       />
     </Tabs>
