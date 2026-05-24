@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Pressable, View, Alert } from 'react-native';
+import { useEffect } from 'react';
+import { StyleSheet, Pressable, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -20,9 +20,6 @@ export default function ReviewScreen() {
   const { session, loading, startSession, nextWord, markRemembered, markForgot, completeSession, resetSession } =
     useDistillationStore();
 
-  const [finished, setFinished] = useState(false);
-  const [results, setResults] = useState({ remembered: 0, forgot: 0 });
-
   useEffect(() => {
     if (user) fetchHeadlists(user.uid);
   }, [user]);
@@ -41,62 +38,23 @@ export default function ReviewScreen() {
     );
   }
 
-  if (!session) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-        <ThemedView style={styles.centered}>
-          <ThemedText type="subtitle">Starting review...</ThemedText>
-        </ThemedView>
-      </SafeAreaView>
-    );
-  }
-
-  const currentWord = session.words[session.currentIndex];
-  const progress = session.currentIndex + 1;
-
-  const handleRemember = async () => {
-    if (!user) return;
-    await markRemembered(user.uid);
-    if (session.currentIndex >= session.words.length - 1) {
-      handleFinish();
-    } else {
-      nextWord();
-    }
-  };
-
-  const handleForgot = async () => {
-    if (!user) return;
-    await markForgot(user.uid);
-    if (session.currentIndex >= session.words.length - 1) {
-      handleFinish();
-    } else {
-      nextWord();
-    }
-  };
-
-  const handleFinish = async () => {
-    if (!user) return;
-    const result = await completeSession(user.uid);
-    setResults({ remembered: result.remembered.length, forgot: result.forgot.length });
-    setFinished(true);
-  };
-
-  if (finished) {
+  // Results screen: shown when session is completed (or about to be)
+  if (session?.completed) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
         <ThemedView style={styles.finishedBox}>
           <ThemedText type="title">🎉 Review Complete!</ThemedText>
           <ThemedView style={styles.resultsRow}>
             <ThemedView style={[styles.resultCard, { backgroundColor: '#D1FAE5' }]}>
-              <ThemedText type="title" style={{ color: '#059669' }}>{results.remembered}</ThemedText>
+              <ThemedText type="title" style={{ color: '#059669' }}>{session.rememberedCount}</ThemedText>
               <ThemedText style={{ color: '#059669' }}>Remembered</ThemedText>
             </ThemedView>
             <ThemedView style={[styles.resultCard, { backgroundColor: '#FEE2E2' }]}>
-              <ThemedText type="title" style={{ color: '#DC2626' }}>{results.forgot}</ThemedText>
+              <ThemedText type="title" style={{ color: '#DC2626' }}>{session.forgotCount}</ThemedText>
               <ThemedText style={{ color: '#DC2626' }}>Forgot</ThemedText>
             </ThemedView>
           </ThemedView>
-          {results.forgot > 0 && (
+          {session.forgotCount > 0 && (
             <ThemedText themeColor="textSecondary" style={{ textAlign: 'center' }}>
               Forgotten words have been moved to a new headlist for the next cycle (D{session.cycle + 1}).
             </ThemedText>
@@ -114,6 +72,43 @@ export default function ReviewScreen() {
       </SafeAreaView>
     );
   }
+
+  // Session not yet started
+  if (!session) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+        <ThemedView style={styles.centered}>
+          <ThemedText type="subtitle">Starting review...</ThemedText>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
+
+  const currentWord = session.words[session.currentIndex];
+  const progress = session.currentIndex + 1;
+
+  const handleRemember = () => {
+    markRemembered();
+    if (session.currentIndex >= session.words.length - 1) {
+      handleFinish();
+    } else {
+      nextWord();
+    }
+  };
+
+  const handleForgot = () => {
+    markForgot();
+    if (session.currentIndex >= session.words.length - 1) {
+      handleFinish();
+    } else {
+      nextWord();
+    }
+  };
+
+  const handleFinish = async () => {
+    if (!user) return;
+    await completeSession(user.uid);
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
