@@ -17,7 +17,7 @@ try {
     });
   }
 } catch (e) {
-  console.warn('expo-notifications not available in this environment (likely Expo Go on Android). Reminders will be disabled.');
+  // Silent catch to prevent crash in Expo Go on Android
 }
 
 export async function requestNotificationPermissions(): Promise<boolean> {
