@@ -1,123 +1,178 @@
-import { useState } from 'react';
-import { StyleSheet, TextInput, Pressable, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { Link, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuthStore } from '@/stores/useAuthStore';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Colors, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import React from 'react';
+import { StyleSheet, View, Text, Pressable, SafeAreaView, Platform } from 'react-native';
+import { Link } from 'expo-router';
+import { Colors } from '@/constants/theme';
 
-export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { logIn, loading, error, clearError } = useAuthStore();
-  const theme = useTheme();
-
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-    await logIn(email, password);
-    // If login succeeds, user state will be set and layout will redirect
-  };
-
+export default function LandingScreen() {
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inner}>
-        <ThemedView style={styles.header}>
-          <ThemedText type="title">Welcome Back</ThemedText>
-          <ThemedText themeColor="textSecondary" style={styles.subtitle}>
-            Log in to continue learning
-          </ThemedText>
-        </ThemedView>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        
+        {/* Icon Container */}
+        <View style={styles.iconContainer}>
+          <View style={styles.iconShape}>
+            {/* Simple CSS-based icon resembling the mockup */}
+            <View style={styles.iconLinesContainer}>
+              <View style={[styles.iconLine, { width: 40 }]} />
+              <View style={[styles.iconLine, { width: 40 }]} />
+              <View style={[styles.iconLine, { width: 24 }]} />
+            </View>
+            <View style={styles.pencilBody}>
+              <View style={styles.pencilTip} />
+            </View>
+          </View>
+        </View>
 
-        {error && (
-          <ThemedView style={styles.errorBox}>
-            <ThemedText style={styles.errorText}>{error}</ThemedText>
-            <Pressable onPress={clearError}>
-              <ThemedText type="link">Dismiss</ThemedText>
-            </Pressable>
-          </ThemedView>
-        )}
+        {/* Title & Subtitle */}
+        <Text style={styles.title}>Gold List</Text>
+        <Text style={styles.subtitle}>
+          Long-term memory through methodical{'\n'}distillation.
+        </Text>
 
-        <ThemedView style={styles.form}>
-          <TextInput
-            style={[styles.input, { backgroundColor: theme.backgroundElement, color: theme.text, borderColor: theme.backgroundSelected }]}
-            placeholder="Email"
-            placeholderTextColor={theme.textSecondary}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          <TextInput
-            style={[styles.input, { backgroundColor: theme.backgroundElement, color: theme.text, borderColor: theme.backgroundSelected }]}
-            placeholder="Password"
-            placeholderTextColor={theme.textSecondary}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+      </View>
 
-          <Pressable
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            <ThemedText style={styles.buttonText}>
-              {loading ? 'Logging in...' : 'Log In'}
-            </ThemedText>
+      {/* Buttons & Footer */}
+      <View style={styles.bottomContainer}>
+        <Link href="/(auth)/signup" asChild>
+          <Pressable style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Get Started</Text>
+            <Text style={styles.primaryButtonIcon}>➔</Text>
           </Pressable>
+        </Link>
 
-          <Link href="/(auth)/signup" asChild>
-            <Pressable style={styles.linkButton}>
-              <ThemedText type="link">Don't have an account? Sign Up</ThemedText>
-            </Pressable>
-          </Link>
+        <Link href="/(auth)/login" asChild>
+          <Pressable style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Sign In</Text>
+          </Pressable>
+        </Link>
 
-          <Link href="/(auth)/forgot-password" asChild>
-            <Pressable style={styles.linkButton}>
-              <ThemedText type="link">Forgot Password?</ThemedText>
-            </Pressable>
-          </Link>
-        </ThemedView>
-      </KeyboardAvoidingView>
+        <Text style={styles.footerText}>
+          The low-stress approach to language learning.
+        </Text>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  inner: { flex: 1, justifyContent: 'center', paddingHorizontal: Spacing.four },
-  header: { alignItems: 'center', marginBottom: Spacing.six, gap: Spacing.two },
-  subtitle: { textAlign: 'center' },
-  errorBox: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F6FD', // Light blue/grayish background
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: Spacing.three,
-    backgroundColor: '#FEE2E2',
-    borderRadius: Spacing.two,
-    marginBottom: Spacing.three,
   },
-  errorText: { color: '#DC2626', flex: 1 },
-  form: { gap: Spacing.three },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    padding: Spacing.three,
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    marginTop: 60,
+  },
+  iconContainer: {
+    marginBottom: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  iconShape: {
+    width: 120,
+    height: 120,
+    backgroundColor: '#0C5AC3',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  iconLinesContainer: {
+    position: 'absolute',
+    top: 36,
+    left: 32,
+    gap: 8,
+  },
+  iconLine: {
+    height: 6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 3,
+  },
+  pencilBody: {
+    position: 'absolute',
+    bottom: 34,
+    right: 30,
+    width: 24,
+    height: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2,
+    transform: [{ rotate: '-45deg' }],
+  },
+  pencilTip: {
+    position: 'absolute',
+    left: -6,
+    top: 0,
+    width: 0,
+    height: 0,
+    borderTopWidth: 4,
+    borderBottomWidth: 4,
+    borderRightWidth: 6,
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderRightColor: '#FFFFFF',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#0C5AC3',
+    marginBottom: 16,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  subtitle: {
     fontSize: 16,
+    color: '#4B5563',
+    textAlign: 'center',
+    lineHeight: 24,
   },
-  button: {
-    backgroundColor: '#208AEF',
-    padding: Spacing.three,
-    borderRadius: Spacing.two,
+  bottomContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  primaryButton: {
+    backgroundColor: '#0C5AC3',
+    paddingVertical: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: Spacing.two,
+    gap: 8,
   },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
-  linkButton: { alignItems: 'center', paddingVertical: Spacing.one },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  primaryButtonIcon: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    paddingVertical: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  footerText: {
+    color: '#6B7280',
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 16,
+  },
 });
