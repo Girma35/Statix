@@ -33,7 +33,7 @@ export default function SignUpScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={StyleSheet.flatten([styles.container, { backgroundColor: theme.background }])}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.inner}>
         <ThemedView style={styles.header}>
           <ThemedText type="title">Create Account</ThemedText>

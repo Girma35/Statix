@@ -44,7 +44,7 @@ export default function LoginScreen() {
                 <Text style={[s.tabTxt, tab === 'login' && s.tabTxtActive]}>Log In</Text>
               </Pressable>
               <Link href="/(auth)/signup" asChild>
-                <Pressable style={[s.tabBtn, tab === 'signup' && s.tabActive]}>
+                <Pressable style={StyleSheet.flatten([s.tabBtn, tab === 'signup' && s.tabActive])}>
                   <Text style={[s.tabTxt, tab === 'signup' && s.tabTxtActive]}>Sign Up</Text>
                 </Pressable>
               </Link>
@@ -77,7 +77,9 @@ export default function LoginScreen() {
               <View style={s.fieldLabelRow}>
                 <Text style={s.fieldLabel}>Password</Text>
                 <Link href="/(auth)/forgot-password" asChild>
-                  <Pressable><Text style={s.forgotTxt}>Forgot Password?</Text></Pressable>
+                  <Pressable style={StyleSheet.flatten({})}>
+                    <Text style={s.forgotTxt}>Forgot Password?</Text>
+                  </Pressable>
                 </Link>
               </View>
               <View style={s.pwWrap}>

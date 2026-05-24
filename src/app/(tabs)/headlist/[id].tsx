@@ -31,7 +31,7 @@ export default function HeadlistDetailScreen() {
 
   if (!headlist) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <SafeAreaView style={StyleSheet.flatten([styles.container, { backgroundColor: theme.background }])}>
         <ThemedText themeColor="textSecondary" style={styles.centered}>Loading...</ThemedText>
       </SafeAreaView>
     );
@@ -78,7 +78,7 @@ export default function HeadlistDetailScreen() {
   const isFull = headlist.words.length >= 25;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={StyleSheet.flatten([styles.container, { backgroundColor: theme.background }])}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
