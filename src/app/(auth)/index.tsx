@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable, SafeAreaView, Platform } from 'react-native';
+import { StyleSheet, View, Text, Pressable, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { Colors } from '@/constants/theme';
 
