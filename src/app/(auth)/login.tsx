@@ -63,6 +63,7 @@ export default function LoginScreen() {
               <Text style={s.fieldLabel}>Email Address</Text>
               <TextInput
                 style={s.input}
+                nativeID="email-input"
                 placeholder="name@example.com"
                 placeholderTextColor="#9CA3AF"
                 value={email}
@@ -85,6 +86,7 @@ export default function LoginScreen() {
               <View style={s.pwWrap}>
                 <TextInput
                   style={[s.input, { flex: 1, borderWidth: 0 }]}
+                  nativeID="password-input"
                   placeholder="••••••••"
                   placeholderTextColor="#9CA3AF"
                   value={password}

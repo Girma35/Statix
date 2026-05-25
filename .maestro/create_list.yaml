@@ -1,23 +1,21 @@
 appId: host.exp.exponent
 ---
-# ── Login (to ensure we're authenticated) ──
-- tapOn: "name@example.com"
+- launchApp:
+    clearState: true
+    stopApp: true
+- assertVisible: "Log In"
+- tapOn:
+    id: "email-input"
 - inputText: "test@example.com"
-- tapOn: "••••••••"
+- tapOn:
+    id: "password-input"
 - inputText: "password123"
 - tapOn: "Log In"
 - assertVisible: "Gold List"
-
-# ── Create a new headlist ──
-# Navigate to the Create tab
 - tapOn: "Create"
-# Verify we landed on the create screen
 - assertVisible: "Start a New Journey"
-# Tap the list name input by its placeholder text
-- tapOn: "e.g., German Adjectives, SQL Basics..."
-# Type the list name
+- tapOn:
+    id: "list-name-input"
 - inputText: "My First E2E List"
-# Submit the form by tapping the "Create List" button
 - tapOn: "Create List"
-# Verify we navigated to the headlist detail screen
 - assertVisible: "+ Add Word"

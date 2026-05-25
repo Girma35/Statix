@@ -1,15 +1,14 @@
 appId: host.exp.exponent
 ---
-- launchApp
-# Wait for the login screen to appear
+- launchApp:
+    clearState: true
+    stopApp: true
 - assertVisible: "Log In"
-# Tap on the email input by its placeholder text ('name@example.com')
-- tapOn: "name@example.com"
+- tapOn:
+    id: "email-input"
 - inputText: "test@example.com"
-# Tap on the password input by its placeholder text ('••••••••')
-- tapOn: "••••••••"
+- tapOn:
+    id: "password-input"
 - inputText: "password123"
-# Tap the Log In button
 - tapOn: "Log In"
-# Wait for the home/dashboard screen to load — "Gold List" appears in the header
 - assertVisible: "Gold List"

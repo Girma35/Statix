@@ -61,6 +61,7 @@ export default function CreateListScreen() {
             <Text style={s.label}>LIST NAME</Text>
             <TextInput
               style={s.input}
+              nativeID="list-name-input"
               placeholder="e.g., German Adjectives, SQL Basics..."
               placeholderTextColor="#9CA3AF"
               value={listName}
