@@ -12,7 +12,6 @@ import { Icon } from '@/components/icon';
 
 const BLUE = '#0C5AC3';
 const BG = '#F4F7FD';
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
 
 export default function ProgressScreen() {
   const { user, profile, refreshProfile } = useAuthStore();
@@ -200,10 +199,6 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
     height: 100, paddingBottom: 4,
   },
-  barCol: { flex: 1, alignItems: 'center', gap: 6 },
-  barTrack: { flex: 1, width: '60%', backgroundColor: '#F1F5F9', borderRadius: 4, justifyContent: 'flex-end', overflow: 'hidden' },
-  barFill: { width: '100%', backgroundColor: BLUE, borderRadius: 4 },
-  barLabel: { fontSize: 11, color: '#94A3B8' },
   streakBanner: {
     backgroundColor: BLUE, borderRadius: 16, padding: 24,
     marginBottom: 16, flexDirection: 'row', overflow: 'hidden',

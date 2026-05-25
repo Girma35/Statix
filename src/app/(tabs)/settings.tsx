@@ -173,6 +173,14 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: '#E8EEF9', overflow: 'hidden',
   },
   divider: { height: 1, backgroundColor: '#F1F5F9', marginLeft: 54 },
+  errorBox: { backgroundColor: '#FEF2F2', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#FECACA' },
+  errorTxt: { fontSize: 14, color: '#DC2626', textAlign: 'center' },
+  deleteBtn: {
+    backgroundColor: '#FEF2F2', borderRadius: 16, borderWidth: 1, borderColor: '#FECACA',
+    paddingVertical: 16, paddingHorizontal: 18,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+  },
+  deleteTxt: { fontSize: 16, fontWeight: '600', color: '#EF4444' },
   logoutBtn: {
     backgroundColor: '#FFF', borderRadius: 16, borderWidth: 1, borderColor: '#E8EEF9',
     paddingVertical: 16, paddingHorizontal: 18,
