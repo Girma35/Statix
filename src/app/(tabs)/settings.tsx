@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, ScrollView, View, Text, Pressable, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Icon } from '@/components/icon';
 
@@ -87,11 +88,11 @@ export default function SettingsScreen() {
           <SettingRow iconName="clock.fill" label="Study Reminders" value="Daily 9:00 AM" onPress={() => {}} />
         </View>
 
-        {/* Settings Group 2 */}
+        {/* Legal */}
         <View style={s.group}>
-          <SettingRow iconName="info.circle.fill" label="About" onPress={() => {}} />
+          <SettingRow iconName="info.circle.fill" label="Privacy Policy" onPress={() => router.push('/(tabs)/legal' as any)} />
           <View style={s.divider} />
-          <SettingRow iconName="questionmark.circle.fill" label="Help Center" external onPress={() => {}} />
+          <SettingRow iconName="questionmark.circle.fill" label="Terms of Service" onPress={() => router.push('/(tabs)/legal?tab=terms' as any)} />
         </View>
 
         {/* Logout Button */}
