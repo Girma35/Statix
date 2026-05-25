@@ -1,0 +1,82 @@
+rules_version = '2';
+
+// Gold List (com.ake.statix)
+// Firestore Security Rules
+//
+// Users can only read/write their own data.
+// Authentication is required for all operations.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ──────────────────────────────────────────────
+    // User Profiles
+    // ──────────────────────────────────────────────
+    // Path: /users/{userId}
+    // Only the authenticated user can read or write their own profile.
+    match /users/{userId} {
+
+      // Allow read if the requesting user is the owner
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Allow create/update if:
+      //   - User is authenticated
+      //   - User is the owner
+      //   - Required fields are present
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.keys().hasAll(['uid', 'email', 'displayName', 'createdAt'])
+                    && request.resource.data.uid == userId;
+
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.uid == userId;
+
+      // Allow delete if the user is the owner
+      allow delete: if request.auth != null && request.auth.uid == userId;
+
+      // ──────────────────────────────────────────────
+      // Headlists (subcollection of users)
+      // Path: /users/{userId}/headlists/{headlistId}
+      // ──────────────────────────────────────────────
+      match /headlists/{headlistId} {
+
+        // Allow read if the requesting user is the parent user
+        allow read: if request.auth != null && request.auth.uid == userId;
+
+        // Allow create if:
+        //   - User is authenticated and is the owner
+        //   - Name is a string and non-empty
+        //   - Words is an array
+        //   - createdAt and distillationDate are numbers (timestamps)
+        allow create: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.name is string
+                      && request.resource.data.name.size() > 0
+                      && request.resource.data.words is list
+                      && request.resource.data.createdAt is number
+                      && request.resource.data.distillationDate is number;
+
+        // Allow update if user is the owner
+        // Validate that words (if changed) are properly structured
+        allow update: if request.auth != null
+                      && request.auth.uid == userId
+                      && (
+                        // If words are being updated, validate structure
+                        !request.resource.data.keys().hasAny(['words'])
+                        || request.resource.data.words is list
+                      );
+
+        // Allow delete if the user is the owner
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // ──────────────────────────────────────────────
+    // Deny all other access
+    // ──────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

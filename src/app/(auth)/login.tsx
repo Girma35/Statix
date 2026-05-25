@@ -104,23 +104,7 @@ export default function LoginScreen() {
               <Text style={s.btnTxt}>{loading ? 'Logging in...' : 'Log In'}</Text>
             </Pressable>
 
-            {/* Or continue with */}
-            <View style={s.dividerRow}>
-              <View style={s.dividerLine} />
-              <Text style={s.dividerTxt}>or continue with</Text>
-              <View style={s.dividerLine} />
-            </View>
 
-            <View style={s.socialRow}>
-              <Pressable style={s.socialBtn}>
-                <Text style={s.socialIcon}>G</Text>
-                <Text style={s.socialTxt}>Google</Text>
-              </Pressable>
-              <Pressable style={s.socialBtn}>
-                <Text style={s.socialIcon}>⌥</Text>
-                <Text style={s.socialTxt}>Github</Text>
-              </Pressable>
-            </View>
           </View>
 
           {/* Quote */}

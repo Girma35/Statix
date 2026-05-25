@@ -105,11 +105,6 @@ export default function SettingsScreen() {
 
         {/* Settings Group 1 */}
         <View style={s.group}>
-          <SettingRow iconName="person.fill" label="Account" onPress={() => {}} />
-          <View style={s.divider} />
-          <SettingRow iconName="bell.fill" label="Notifications" onPress={() => {}} />
-          <View style={s.divider} />
-          <SettingRow iconName="clock.fill" label="Study Reminders" value="Daily 9:00 AM" onPress={() => {}} />
         </View>
 
         {/* Legal */}
@@ -138,7 +133,7 @@ export default function SettingsScreen() {
           <Text style={s.logoutTxt}>{loading ? 'Logging out...' : 'Log Out'}</Text>
         </Pressable>
 
-        <Text style={s.version}>Version 2.4.1 (Build 890)</Text>
+        <Text style={s.version}>Version 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
