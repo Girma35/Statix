@@ -38,8 +38,8 @@ export default function ProgressScreen() {
 
   const completionRate = cycleProgress;
 
-  // Fake monthly retention data for chart (real data would come from backend)
-  const chartData = [40, 55, 62, 70, 78, completionRate];
+  // Retention chart data — will display once backend analytics are live
+  const retentionAvailable = false;
 
   const milestones = [
     wordsLearned >= 1000 && { icon: 'chart.bar.fill', label: '1,000 Word Club', when: '2 days ago' },
@@ -90,30 +90,34 @@ export default function ProgressScreen() {
           </View>
           <Text style={[s.bigNum, { color: '#22C55E' }]}>{completionRate}%</Text>
           <Text style={s.targetText}>Target: 70% retention</Text>
-        </View>
-
-        {/* Retention Growth Chart */}
+        </View>          {/* Retention Growth Chart */}
         <View style={[s.card, { paddingBottom: 8 }]}>
           <Text style={s.chartTitle}>Retention Growth</Text>
           <Text style={s.chartSub}>Average retention rate over the last 6 months</Text>
 
-          {/* Toggle buttons */}
-          <View style={s.toggleRow}>
-            <Pressable style={s.toggleBtn}><Text style={s.toggleTxtInactive}>Week</Text></Pressable>
-            <Pressable style={[s.toggleBtn, s.toggleActive]}><Text style={s.toggleTxtActive}>Month</Text></Pressable>
-          </View>
-
-          {/* Bar chart */}
-          <View style={s.chartWrap}>
-            {chartData.map((val, i) => (
-              <View key={i} style={s.barCol}>
-                <View style={s.barTrack}>
-                  <View style={[s.barFill, { height: `${val}%` }]} />
-                </View>
-                <Text style={s.barLabel}>{MONTHS[i]}</Text>
+          {retentionAvailable ? (
+            <>
+              {/* Toggle buttons */}
+              <View style={s.toggleRow}>
+                <Pressable style={s.toggleBtn}><Text style={s.toggleTxtInactive}>Week</Text></Pressable>
+                <Pressable style={[s.toggleBtn, s.toggleActive]}><Text style={s.toggleTxtActive}>Month</Text></Pressable>
               </View>
-            ))}
-          </View>
+
+              {/* Bar chart */}
+              <View style={s.chartWrap}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ color: '#94A3B8', fontSize: 14 }}>Chart data coming soon</Text>
+                </View>
+              </View>
+            </>
+          ) : (
+            <View style={s.chartPlaceholder}>
+              <Text style={s.chartPlaceholderTitle}>📊 Retention analytics are on their way</Text>
+              <Text style={s.chartPlaceholderSub}>
+                Once you've completed a few review cycles, your retention data will appear here.
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Streak Banner */}
@@ -181,6 +185,9 @@ const s = StyleSheet.create({
   targetText: { fontSize: 13, color: '#94A3B8', marginTop: 4 },
   chartTitle: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 4 },
   chartSub: { fontSize: 12, color: '#64748B', marginBottom: 14 },
+  chartPlaceholder: { paddingVertical: 24, alignItems: 'center' as const },
+  chartPlaceholderTitle: { fontSize: 16, color: '#0F172A', fontWeight: '600', marginBottom: 8, textAlign: 'center' as const },
+  chartPlaceholderSub: { fontSize: 13, color: '#94A3B8', textAlign: 'center' as const, lineHeight: 19, maxWidth: '80%' },
   toggleRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   toggleBtn: {
     paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20,
