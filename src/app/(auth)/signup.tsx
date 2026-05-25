@@ -51,7 +51,7 @@ export default function SignUpScreen() {
             {/* Tab Toggle */}
             <View style={s.tabRow}>
               <Link href="/(auth)/login" asChild>
-                <Pressable style={[s.tabBtn, tab === 'login' && s.tabActive]}>
+                <Pressable style={StyleSheet.flatten([s.tabBtn, tab === 'login' && s.tabActive])}>
                   <Text style={[s.tabTxt, tab === 'login' && s.tabTxtActive]}>Log In</Text>
                 </Pressable>
               </Link>

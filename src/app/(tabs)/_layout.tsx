@@ -81,6 +81,18 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => <TabIcon name="gearshape.fill" focused={focused} />,
         }}
       />
+      <Tabs.Screen
+        name="headlist/[id]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="review/[id]"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
