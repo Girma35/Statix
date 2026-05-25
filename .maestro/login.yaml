@@ -1,0 +1,15 @@
+appId: host.exp.exponent # Assuming we test via Expo Go by default, but it can be com.ake.statix if built
+---
+- launchApp
+# Verify we are on the login screen
+- assertVisible: "Log In"
+# Enter email
+- tapOn: "name@example.com"
+- inputText: "test@example.com"
+# Enter password
+- tapOn: "••••••••"
+- inputText: "password123"
+# Submit
+- tapOn: "Log In"
+# Verify login was successful (assuming it routes to Home or Gold List)
+- assertVisible: "Gold List"
