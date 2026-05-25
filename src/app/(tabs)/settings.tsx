@@ -44,7 +44,7 @@ const r = StyleSheet.create({
 });
 
 export default function SettingsScreen() {
-  const { user, profile, logOut, loading } = useAuthStore();
+  const { user, profile, logOut, deleteAccount, loading, error } = useAuthStore();
   const streak = profile?.streak ?? 0;
   const level = streak >= 30 ? 'PLATINUM LEVEL' : streak >= 14 ? 'GOLD LEVEL' : 'SILVER LEVEL';
 
@@ -53,6 +53,30 @@ export default function SettingsScreen() {
       { text: 'Cancel', style: 'cancel' },
       { text: 'Log Out', style: 'destructive', onPress: logOut },
     ]);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your profile, all headlists, words, and progress data. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Everything',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'Are you absolutely sure?',
+              'All your vocabulary lists, streaks, and progress will be lost forever.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Delete', style: 'destructive', onPress: deleteAccount },
+              ]
+            );
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -94,6 +118,19 @@ export default function SettingsScreen() {
           <View style={s.divider} />
           <SettingRow iconName="questionmark.circle.fill" label="Terms of Service" onPress={() => router.push('/(tabs)/legal?tab=terms' as any)} />
         </View>
+
+        {/* Error */}
+        {error && (
+          <View style={s.errorBox}>
+            <Text style={s.errorTxt}>{error}</Text>
+          </View>
+        )}
+
+        {/* Delete Account */}
+        <Pressable style={s.deleteBtn} onPress={handleDeleteAccount} disabled={loading}>
+          <Icon name="person.circle.fill" size={22} color="#EF4444" />
+          <Text style={s.deleteTxt}>{loading ? 'Deleting...' : 'Delete Account'}</Text>
+        </Pressable>
 
         {/* Logout Button */}
         <Pressable style={s.logoutBtn} onPress={handleLogout} disabled={loading}>

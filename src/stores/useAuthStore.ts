@@ -5,9 +5,12 @@ import {
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
+  deleteUser,
   User,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import {
+  doc, setDoc, getDoc, updateDoc, deleteDoc, collection, getDocs, writeBatch,
+} from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
 import { useHeadlistStore } from '@/stores/useHeadlistStore';
 import { useDistillationStore } from '@/stores/useDistillationStore';
@@ -29,6 +32,7 @@ interface AuthState {
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateStreak: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -128,6 +132,44 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!user) return;
     const profile = await fetchProfile(user.uid);
     set({ profile });
+  },
+
+  deleteAccount: async () => {
+    const { user } = get();
+    if (!user) {
+      set({ error: 'No user is currently logged in.' });
+      return;
+    }
+    set({ loading: true, error: null });
+    try {
+      // Delete all headlists subcollection documents
+      const headlistsSnap = await getDocs(collection(db, 'users', user.uid, 'headlists'));
+      const batch = writeBatch(db);
+      headlistsSnap.docs.forEach((docSnap) => {
+        batch.delete(docSnap.ref);
+      });
+      await batch.commit();
+
+      // Delete the user profile document from Firestore
+      await deleteDoc(doc(db, 'users', user.uid));
+
+      // Delete the Firebase Auth user account
+      await deleteUser(user);
+
+      // Reset all stores and sign out
+      useHeadlistStore.setState({ headlists: [], loading: false, error: null });
+      useDistillationStore.setState({ session: null, loading: false, error: null });
+      set({ user: null, profile: null, loading: false });
+    } catch (err: any) {
+      if (err.code === 'auth/requires-recent-login') {
+        set({
+          loading: false,
+          error: 'For security, please log out, log back in, and try deleting your account again.',
+        });
+      } else {
+        set({ loading: false, error: err.message });
+      }
+    }
   },
 }));
 
