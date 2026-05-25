@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "description": "Statix is a spaced-repetition vocabulary learning app that uses the Gold List distillation method to help you master words through systematic 14-day review cycles.",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "bundleIdentifier": "com.ake.statix",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "Statix uses notifications to remind you when your 14-day word reviews are due."
@@ -24,6 +24,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.ake.statix",
+      "versionCode": 1,
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
@@ -57,7 +58,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/notification-icon.png",
+          "icon": "./assets/images/android-icon-monochrome.png",
           "color": "#0C5AC3"
         }
       ]
