@@ -1,16 +1,23 @@
-appId: host.exp.exponent # Assuming we test via Expo Go by default
+appId: host.exp.exponent
 ---
-- launchApp
-# Assuming the user is already logged in for this flow
-# Tap the "Create" tab at the bottom
+# ── Login (to ensure we're authenticated) ──
+- tapOn: "name@example.com"
+- inputText: "test@example.com"
+- tapOn: "••••••••"
+- inputText: "password123"
+- tapOn: "Log In"
+- assertVisible: "Gold List"
+
+# ── Create a new headlist ──
+# Navigate to the Create tab
 - tapOn: "Create"
-# Verify we are on the Create List screen
+# Verify we landed on the create screen
 - assertVisible: "Start a New Journey"
-# Tap on the list name input placeholder
+# Tap the list name input by its placeholder text
 - tapOn: "e.g., German Adjectives, SQL Basics..."
-# Input the name of our new list
+# Type the list name
 - inputText: "My First E2E List"
-# Submit the form
-- tapOn: "Create List  ➔"
-# Verify that it routed to the new headlist detail screen (which has "+ Add Word")
+# Submit the form by tapping the "Create List" button
+- tapOn: "Create List"
+# Verify we navigated to the headlist detail screen
 - assertVisible: "+ Add Word"
